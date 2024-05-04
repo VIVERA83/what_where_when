@@ -1,13 +1,13 @@
 import asyncio
 from core.logger import setup_logging
-from game import Application
+from app import BaseApp
 from rabbit.accessor import RabbitAccessor
 
 
 async def run_app():
     logger = setup_logging()
     rabbit = RabbitAccessor(logger=logger)
-    app = Application(rabbit, logger)
+    app = BaseApp(rabbit, logger)
     try:
         await rabbit.connect()
         await app.start()
