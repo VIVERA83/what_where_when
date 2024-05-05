@@ -1,4 +1,4 @@
-from game_www import BaseGameAccessor
+from game import BaseGameAccessor
 
 
 class StartGame(BaseGameAccessor):
@@ -7,11 +7,9 @@ class StartGame(BaseGameAccessor):
     ) -> None:
         """Создаем игру."""
         self.logger.info(f"create_game: {users=}, {timeout=}, {questions_count=}")
-        for user in users:
-            await self.db.add_user({"user_name": user})
-        await self.db.add_game_session(
-            users=users, timeout=timeout, questions_count=questions_count
-        )
+        # await self.db.add_game_session(
+        #     users=users, timeout=timeout, questions_count=questions_count
+        # )
 
     async def create_user(self, email: str, user_name: str = None) -> None:
         """Обработчик событий."""

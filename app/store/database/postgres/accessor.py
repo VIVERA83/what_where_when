@@ -10,6 +10,7 @@ from sqlalchemy import (
     MetaData,
     Result,
     Select,
+    select,
     TextClause,
     UpdateBase,
     ValuesBase,
@@ -148,3 +149,21 @@ class PostgresAccessor:
             result = [await session.execute(q) for q in query]
             await session.commit()
             return result
+
+    @staticmethod
+    def get_query_select_by_field(
+            model: Model, field_name: str, field_value: Any
+    ) -> Query:
+        """Get a query by field name.
+
+        Args:
+            model: Table model
+            field_name: Field names in the model
+            field_value: Field values in the model
+
+        Returns:
+            object: Query object
+        """
+        return select(model).where(
+            text(f"{model.__tablename__}.{field_name} = '{field_value}'")
+        )

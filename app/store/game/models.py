@@ -1,6 +1,7 @@
 from enum import Enum
+from typing import List
 
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, Table, Column
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -14,24 +15,35 @@ class GameStatusEnum(Enum):
     cancelled = "cancelled"
 
 
-class Association(Base):
-    __tablename__ = "association_table"
-    user_id: Mapped[int] = mapped_column(
-        ForeignKey("users.id"), primary_key=True, init=False
-    )
-    game_session_id: Mapped[int] = mapped_column(
-        ForeignKey("game_sessions.id"), primary_key=True, init=False
-    )
+association_table = Table(
+    "association_table",
+    Base.metadata,
+    Column("user_id", ForeignKey("users.id"), primary_key=True),
+    Column("game_session_id", ForeignKey("game_sessions.id"), primary_key=True),
+)
+
+
+# class Association(Base):
+#     __tablename__ = "association_table"
+#
+#     user_id: Mapped[int] = mapped_column(
+#         ForeignKey("users.id"), primary_key=True, init=False
+#     )
+#     game_session_id: Mapped[int] = mapped_column(
+#         ForeignKey("game_sessions.id"), primary_key=True, init=False
+#     )
 
 
 class UserModel(Base):
     __tablename__ = "users"
 
-    email: Mapped[str] = mapped_column(unique=True, init=False)
-    user_name: Mapped[str] = mapped_column(init=False)
-
-    game_sessions: Mapped[list["GameSessionModel"]] = relationship(
-        secondary=Association, back_populates="user", init=False
+    email: Mapped[str] = mapped_column(unique=True, init=False, nullable=True)
+    user_name: Mapped[str] = mapped_column(init=False, nullable=True)
+    tg_user_id: Mapped[str] = mapped_column(init=False)
+    game_sessions: Mapped[List["GameSessionModel"]] = relationship(
+        secondary=association_table,
+        back_populates="users",
+        init=False
     )
 
 
@@ -41,10 +53,11 @@ class GameSessionModel(Base):
     game_status: Mapped[ENUM] = mapped_column(ENUM(GameStatusEnum), init=False)
     timeout: Mapped[int] = mapped_column(init=False)
 
-    users: Mapped[list["UserModel"]] = relationship(
-        secondary=Association, back_populates="game_session", init=False
+    users: Mapped[List["UserModel"]] = relationship(
+        secondary=association_table,
+        back_populates="game_sessions",
+        init=False
     )
-
 
 # class UserModel(Base):
 #     __tablename__ = "users"
