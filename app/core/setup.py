@@ -22,8 +22,8 @@ def callback(rabbit: RabbitAccessor) -> Callable:
                 # result = await a(func, **json.loads(message.body)) or b'{"status": "Empty response"}'
 
                 result = (
-                        await func(**json.loads(message.body))
-                        or b'{"status": "Empty response"}'
+                    await func(**json.loads(message.body))
+                    or b'{"status": "Empty response"}'
                 )
             except Exception as ex:
                 rabbit.logger.error(ex)
@@ -52,4 +52,3 @@ async def run_app():
         logger.info("Application stopped")
     finally:
         await asyncio.gather(rabbit.disconnect(), db.disconnect(), cache.disconnect())
-

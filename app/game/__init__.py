@@ -8,7 +8,12 @@ EVENTS = Literal["create_game", "start"]
 
 
 class BaseGameAccessor:
-    def __init__(self, database: DataBaseManager, cache: CacheAccessor, logger=logging.getLogger(__name__)):
+    def __init__(
+        self,
+        database: DataBaseManager,
+        cache: CacheAccessor,
+        logger=logging.getLogger(__name__),
+    ):
         self.db = database
         self.cache = cache
         self.logger = logger

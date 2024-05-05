@@ -152,7 +152,7 @@ class PostgresAccessor:
 
     @staticmethod
     def get_query_select_by_field(
-            model: Model, field_name: str, field_value: Any
+        model: Model, field_name: str, field_value: Any
     ) -> Query:
         """Get a query by field name.
 

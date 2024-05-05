@@ -41,11 +41,7 @@ class UserModel(Base):
     email: Mapped[str] = mapped_column(unique=True, init=False, nullable=True)
     user_name: Mapped[str] = mapped_column(init=False, nullable=True)
     game_sessions: Mapped[List["GameSessionModel"]] = relationship(
-        secondary=association_table,
-        back_populates="users",
-
-        init=False
-
+        secondary=association_table, back_populates="users", init=False
     )
 
 
@@ -56,11 +52,9 @@ class GameSessionModel(Base):
     timeout: Mapped[int] = mapped_column(init=False)
 
     users: Mapped[List["UserModel"]] = relationship(
-        secondary=association_table,
-        back_populates="game_sessions",
-
-        init=False
+        secondary=association_table, back_populates="game_sessions", init=False
     )
+
 
 # class UserModel(Base):
 #     __tablename__ = "users"

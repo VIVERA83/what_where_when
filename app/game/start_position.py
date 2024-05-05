@@ -10,7 +10,12 @@ class StartPosition(BaseGameAccessor):
         2. Запоминаем позицию пользователя
         3. Направляем пользователю позицию в игре
         """
-        user = await self.db.get_user_by_id(tg_user_id) or await self.db.add_user(tg_user_id=tg_user_id)
+        # 1
+        user = await self.db.get_user_by_id(tg_user_id) or await self.db.add_user(
+            tg_user_id=tg_user_id
+        )
+        # 2
+
         self.logger.info(f"start: {user=}")
         return 0
 

@@ -29,15 +29,17 @@ docker push vivera83/ii_labor_protect:1
 
 
 ```bash
-cd game 
+cd app 
 alembic init -t async alembic
 ```
+
+
 ```bash
-cd game 
+cd app 
 alembic revision --autogenerate -m "Initial tables"
 ```
 ```bash
-cd game
+cd app
 alembic upgrade head
 ```
 ```

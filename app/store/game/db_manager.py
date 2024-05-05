@@ -9,8 +9,12 @@ from store.game.models import GameSessionModel, UserModel
 
 class DataBaseManager(PostgresAccessor):
 
-    async def add_user(self, tg_user_id: str, email: str = None, user_name: str = None) -> UserModel:
-        query = self.get_query_insert(UserModel, tg_user_id=tg_user_id, email=email, user_name=user_name)
+    async def add_user(
+        self, tg_user_id: str, email: str = None, user_name: str = None
+    ) -> UserModel:
+        query = self.get_query_insert(
+            UserModel, tg_user_id=tg_user_id, email=email, user_name=user_name
+        )
         self.logger.info(f"add {UserModel.__name__} : {tg_user_id}")
         return (await self.query_execute(query)).unique().scalar()
 
@@ -20,8 +24,11 @@ class DataBaseManager(PostgresAccessor):
         self.logger.info(f"add {GameSessionModel.__name__} : {data}")
 
     async def get_user_by_id(self, tg_user_id: str) -> UserModel | None:
-        query = (self.get_query_select_by_field(UserModel, "tg_user_id", tg_user_id).options(
-            joinedload(UserModel.game_sessions)).where(UserModel.tg_user_id == tg_user_id))
+        query = (
+            self.get_query_select_by_field(UserModel, "tg_user_id", tg_user_id)
+            .options(joinedload(UserModel.game_sessions))
+            .where(UserModel.tg_user_id == tg_user_id)
+        )
         return (await self.query_execute(query)).unique().scalar()
 
 
