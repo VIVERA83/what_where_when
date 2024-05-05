@@ -10,7 +10,8 @@ from aio_pika.abc import (
     AbstractQueue,
 )
 from core.settings import RabbitMQSettings
-from rabbit.backoff import before_execution
+
+from store.database.rabbit.backoff import before_execution
 
 
 class RabbitAccessor:
@@ -19,9 +20,9 @@ class RabbitAccessor:
     exchange: AbstractExchange = None
 
     def __init__(
-            self,
-            settings: RabbitMQSettings = RabbitMQSettings(),
-            logger: logging.Logger = logging.getLogger(__name__),
+        self,
+        settings: RabbitMQSettings = RabbitMQSettings(),
+        logger: logging.Logger = logging.getLogger(__name__),
     ) -> None:
         self.settings = settings
         self.logger = logger
@@ -61,10 +62,10 @@ class RabbitAccessor:
         self.logger.info(f"{self.__class__.__name__} disconnected")
 
     async def consume(
-            self,
-            callback: Callable[[AbstractIncomingMessage], Awaitable[Any]],
-            name: str = None,
-            no_ack: bool = False,
+        self,
+        callback: Callable[[AbstractIncomingMessage], Awaitable[Any]],
+        name: str = None,
+        no_ack: bool = False,
     ) -> str:
         if name:
             assert not self.queues.get(name), f"Queue {name} already exists"
@@ -75,7 +76,7 @@ class RabbitAccessor:
         return queue.name
 
     async def publish(
-            self, reply_to: str, routing_key: str, correlation_id: str, body: bytes
+        self, reply_to: str, routing_key: str, correlation_id: str, body: bytes
     ):
         return await self.channel.default_exchange.publish(
             Message(
@@ -87,12 +88,12 @@ class RabbitAccessor:
             routing_key=routing_key,
         )
 
-    def is_connected(self) -> bool:
-        """Check if the object is connected and return a boolean value.
-
-        Returns:
-            bool: True if the object is connected, False otherwise.
-        """
-        if getattr(self, "connection", None):
-            return not self.connection.is_closed
-        return False
+    # def is_connected(self) -> bool:
+    #     """Check if the object is connected and return a boolean value.
+    #
+    #     Returns:
+    #         bool: True if the object is connected, False otherwise.
+    #     """
+    #     if getattr(self, "connection", None):
+    #         return not self.connection.is_closed
+    #     return False

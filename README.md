@@ -26,3 +26,20 @@ docker build -t vivera83/ii_labor_protect:1 .
 ```bash
 docker push vivera83/ii_labor_protect:1
 ```  
+
+
+```bash
+cd game 
+alembic init -t async alembic
+```
+```bash
+cd game 
+alembic revision --autogenerate -m "Initial tables"
+```
+```bash
+cd game
+alembic upgrade head
+```
+```
+docker run -d -p 6378:6378 --name myredis redis
+```
