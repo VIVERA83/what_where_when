@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import List
 
-from sqlalchemy import ForeignKey, Table, Column
+from sqlalchemy import ForeignKey, Table, Column, String
 from sqlalchemy.dialects.postgresql import ENUM
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -18,7 +18,7 @@ class GameStatusEnum(Enum):
 association_table = Table(
     "association_table",
     Base.metadata,
-    Column("user_id", ForeignKey("users.id"), primary_key=True),
+    Column("tg_user_id", String, ForeignKey("users.tg_user_id"), primary_key=True),
     Column("game_session_id", ForeignKey("game_sessions.id"), primary_key=True),
 )
 
@@ -37,13 +37,15 @@ association_table = Table(
 class UserModel(Base):
     __tablename__ = "users"
 
+    tg_user_id: Mapped[str] = mapped_column(init=False, primary_key=True, unique=True)
     email: Mapped[str] = mapped_column(unique=True, init=False, nullable=True)
     user_name: Mapped[str] = mapped_column(init=False, nullable=True)
-    tg_user_id: Mapped[str] = mapped_column(init=False)
     game_sessions: Mapped[List["GameSessionModel"]] = relationship(
         secondary=association_table,
         back_populates="users",
+
         init=False
+
     )
 
 
@@ -56,6 +58,7 @@ class GameSessionModel(Base):
     users: Mapped[List["UserModel"]] = relationship(
         secondary=association_table,
         back_populates="game_sessions",
+
         init=False
     )
 

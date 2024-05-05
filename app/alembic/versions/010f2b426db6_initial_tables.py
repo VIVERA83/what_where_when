@@ -1,8 +1,8 @@
 """Initial tables
 
-Revision ID: 0e67080f69c9
+Revision ID: 010f2b426db6
 Revises: 
-Create Date: 2024-05-05 18:28:27.030949
+Create Date: 2024-05-05 19:26:13.755021
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision: str = '0e67080f69c9'
+revision: str = '010f2b426db6'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -30,22 +30,23 @@ def upgrade() -> None:
     schema='game'
     )
     op.create_table('users',
+    sa.Column('tg_user_id', sa.String(), nullable=False),
     sa.Column('email', sa.String(), nullable=True),
     sa.Column('user_name', sa.String(), nullable=True),
-    sa.Column('tg_user_id', sa.String(), nullable=False),
     sa.Column('id', sa.UUID(), server_default=sa.text('gen_random_uuid()'), nullable=False),
     sa.Column('created', sa.TIMESTAMP(), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=False),
     sa.Column('modified', sa.TIMESTAMP(), server_default=sa.text('CURRENT_TIMESTAMP'), nullable=False),
-    sa.PrimaryKeyConstraint('id'),
+    sa.PrimaryKeyConstraint('tg_user_id', 'id'),
     sa.UniqueConstraint('email'),
+    sa.UniqueConstraint('tg_user_id'),
     schema='game'
     )
     op.create_table('association_table',
-    sa.Column('user_id', sa.UUID(), nullable=False),
+    sa.Column('tg_user_id', sa.String(), nullable=False),
     sa.Column('game_session_id', sa.UUID(), nullable=False),
     sa.ForeignKeyConstraint(['game_session_id'], ['game.game_sessions.id'], ),
-    sa.ForeignKeyConstraint(['user_id'], ['game.users.id'], ),
-    sa.PrimaryKeyConstraint('user_id', 'game_session_id'),
+    sa.ForeignKeyConstraint(['tg_user_id'], ['game.users.tg_user_id'], ),
+    sa.PrimaryKeyConstraint('tg_user_id', 'game_session_id'),
     schema='game'
     )
     # ### end Alembic commands ###
