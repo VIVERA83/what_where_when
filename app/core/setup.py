@@ -15,22 +15,15 @@ from store.game.db_manager import DataBaseManager
 def callback(rabbit: RabbitAccessor) -> Callable:
     def decorator(func: Callable[[Any], Awaitable[Any]]):
         async def wrapper(message: AbstractIncomingMessage):
-            # rabbit.logger.debug(f"Got request: {message.body}")
-            result = b'{"status": "error"}'
             try:
-                # a = getattr(func, name)
-                # result = await a(func, **json.loads(message.body)) or b'{"status": "Empty response"}'
+                result = await func(**json.loads(message.body)) or b'{"status": "Empty response"}'
 
-                result = (
-                    await func(**json.loads(message.body))
-                    or b'{"status": "Empty response"}'
-                )
             except Exception as ex:
+                result = json.dumps({"status": "Error", "message": str(ex)}).encode("utf-8")
                 rabbit.logger.error(ex)
             await rabbit.reply_to(message, result)
-            await rabbit.send_message("hello", result)
             await message.ack(True)
-            # rabbit.logger.debug("Got response")
+            rabbit.logger.debug(f"Got response: {result}")
             return
 
         return wrapper

@@ -14,7 +14,7 @@ class DataBaseManager(PostgresAccessor):
     ) -> UserModel:
         query = self.get_query_insert(
             UserModel, tg_user_id=tg_user_id, email=email, user_name=user_name
-        )
+        ).returning()
         self.logger.info(f"add {UserModel.__name__} : {tg_user_id}")
         return (await self.query_execute(query)).unique().scalar()
 
