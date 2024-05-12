@@ -13,10 +13,7 @@ class StartPosition(BaseGameAccessor):
         2. Запоминаем позицию пользователя
         3. Направляем пользователю позицию в игре
         """
-        # 1
         user = await self.db.get_user_by_id(tg_user_id) or await self.db.add_user(tg_user_id=tg_user_id)
-        # 2
-        ic(user)
         user_state = UserState(
             tg_user_id=user.tg_user_id,
             position="main",
@@ -26,7 +23,7 @@ class StartPosition(BaseGameAccessor):
         self.logger.info(f"start: {user=}")
         return user_state.to_bytes()
 
-    async def main(self, user_id: str, *_, **__) -> bytes:
+    async def main(self, tg_user_id: str, *_, **__) -> bytes:
         """Пользователь в главном меню.
 
         1. Проверяем позицию пользователя
@@ -35,7 +32,7 @@ class StartPosition(BaseGameAccessor):
         3. Направляем пользователю позицию в игре
         """
 
-    async def click_new_game(self, user_id: str, *_, **__):
+    async def new_game(self, tg_user_id: str, *_, **__):
         """Пользователь нажал кнопку "Новая игра".
 
         1. Проверяем позицию пользователя
@@ -43,4 +40,4 @@ class StartPosition(BaseGameAccessor):
         2. Запоминаем позицию пользователя
         3. Направляем пользователю позицию в игре
         """
-        return 0
+        return UserState(tg_user_id=tg_user_id,position="new_game", settings={}).to_bytes()

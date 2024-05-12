@@ -17,7 +17,6 @@ def callback(rabbit: RabbitAccessor) -> Callable:
         async def wrapper(message: AbstractIncomingMessage):
             try:
                 result = await func(**json.loads(message.body)) or b'{"status": "Empty response"}'
-
             except Exception as ex:
                 result = json.dumps({"status": "Error", "message": str(ex)}).encode("utf-8")
                 rabbit.logger.error(ex)
