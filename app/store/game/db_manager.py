@@ -10,7 +10,7 @@ from store.game.models import GameSessionModel, UserModel
 class DataBaseManager(PostgresAccessor):
 
     async def add_user(
-        self, tg_user_id: str, email: str = None, user_name: str = None
+            self, tg_user_id: str, email: str = None, user_name: str = None
     ) -> UserModel:
         query = self.get_query_insert(
             UserModel, tg_user_id=tg_user_id, email=email, user_name=user_name
@@ -30,17 +30,3 @@ class DataBaseManager(PostgresAccessor):
             .where(UserModel.tg_user_id == tg_user_id)
         )
         return (await self.query_execute(query)).unique().scalar()
-
-
-"""
-print(select(address_table.c.email_address).select_from(user_table).join(address_table))
-"""
-# select_from(GameSessionModel).
-# join(, UserModel.id == GameSessionModel.user_id))
-# join_from(UserModel,GameSessionModel, ))
-# select_from(GameSessionModel).
-# join(UserModel, UserModel.id == GameSessionModel.))
-# b1 = session.query(Book). \
-#     options(joinedload(Book.authors)). \
-#     where(Book.id == 1).one()
-# print(b1.title)
