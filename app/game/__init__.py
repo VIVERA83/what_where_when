@@ -3,9 +3,7 @@ import logging
 import re
 from typing import Literal, Any, Union, Callable, Awaitable
 
-from icecream import ic
-
-from game.dc import UserState
+from game.dc import UserState, GameSettings
 from store.game.cache_manager import CacheAccessor
 from store.game.db_manager import DataBaseManager
 
@@ -15,7 +13,7 @@ EVENT = Literal["text", "callback_data"]
 def check_cache(func: Callable[["BaseGameAccessor", UserState, Any], Awaitable["UserState"]]):
     async def wrapper(self: "BaseGameAccessor", tg_user_id: str, *args, **kwargs):
         user_state_raw = await self.cache.get(tg_user_id)
-        user_state = UserState(**json.loads(user_state_raw))
+        user_state = str_to_user_state(user_state_raw)
         new_user_state = await func(self, user_state, *args, **kwargs)
         await self.cache.set(new_user_state.tg_user_id, new_user_state.to_string(), 3600)
         return new_user_state
@@ -59,3 +57,10 @@ class BaseGameAccessor:
     def add_text_event_handler(self, handler: Callable[["BaseGameAccessor", str, Any], Awaitable["UserState"]],
                                text: Union[str, re.Pattern]):
         self.__text_event_handlers[text] = handler
+
+
+def str_to_user_state(data: str) -> UserState:
+    user_state = UserState(**json.loads(data))
+    if isinstance(user_state.settings, dict):
+        user_state.settings = GameSettings(**user_state.settings)
+    return user_state

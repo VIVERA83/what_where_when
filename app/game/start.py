@@ -1,5 +1,3 @@
-from icecream import ic
-
 from . import BaseGameAccessor, check_cache
 from .dc import UserState
 
@@ -7,7 +5,7 @@ from .dc import UserState
 class StartPosition(BaseGameAccessor):
 
     def init(self):
-        self.add_text_event_handler(self.start, "start")
+        self.add_text_event_handler(self.start, "start")  # noqa
 
     async def start(self, tg_user_id: str, *_, **__) -> UserState:
         """Стартовая позиция пользователя в игре.
@@ -31,10 +29,4 @@ class StartPosition(BaseGameAccessor):
     async def main(self, user_state: UserState, *_, **__) -> UserState:
         """Пользователь в главном меню."""
         user_state.position = "main"
-        return user_state
-
-    @check_cache
-    async def new_game(self, user_state: UserState, *_, **__) -> UserState:
-        """Пользователь нажал кнопку "Новая игра"."""
-        user_state.position = "new_game"
         return user_state
