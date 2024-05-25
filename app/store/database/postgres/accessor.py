@@ -46,9 +46,10 @@ class Base(MappedAsDataclass, DeclarativeBase):
         quote_schema=True,
     )
     id: Mapped[UUID] = mapped_column(
-        UUID(as_uuid=True),
+        UUID(as_uuid=False),
         primary_key=True,
         server_default=text("gen_random_uuid()"),
+        unique=True,
     )
     created: Mapped[DATETIME] = mapped_column(
         TIMESTAMP,

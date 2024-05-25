@@ -28,6 +28,6 @@ class QuestionsSettingPosition(BaseGameAccessor):
 
     @check_cache
     async def back_new_game(self, user_state: UserState, *_, **__) -> UserState:
-        """Пользователь нажал кнопку "Игрок 4"."""
-        user_state.position = "main"
+        """Пользователь нажал кнопку "Вернуться главное меню"."""
+        user_state.position = "question_count"
         return user_state

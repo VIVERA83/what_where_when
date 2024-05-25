@@ -9,3 +9,4 @@ ruff==0.4.2
 redis==5.0.1
 marshmallow==-3.21.2
 marshmallow-dataclass==8.6.1
+alembic-postgresql-enum==1.2.0

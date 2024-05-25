@@ -1,3 +1,5 @@
+from icecream import ic
+
 from game import BaseGameAccessor, UserState, check_cache
 
 
@@ -11,7 +13,9 @@ class PlayersSettingPosition(BaseGameAccessor):
         """Пользователь нажал кнопку "Игрок 1"."""
         user_state.settings.quantity_players = 1
         # создаём игру, и переходим в игру
-        user_state.position = "меню игры"
+        user_state.position = "single_game"
+        game_session = await self.db.create_game_session([user_state.tg_user_id])
+        ic("ok")
         return user_state
 
     @check_cache

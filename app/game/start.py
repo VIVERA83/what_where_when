@@ -1,5 +1,5 @@
 from . import BaseGameAccessor, check_cache
-from .dc import UserState
+from .dc import UserState, GameSettings
 
 
 class StartPosition(BaseGameAccessor):
@@ -19,10 +19,10 @@ class StartPosition(BaseGameAccessor):
         user_state = UserState(
             tg_user_id=user.tg_user_id,
             position="start",
-            settings={},
+            settings=GameSettings(),
         )
         await self.cache.set(user.tg_user_id, user_state.to_string(), 3600)
-        self.logger.info(f"start: {user=}")
+        self.logger.info(f"start: {user.tg_user_id}")
         return user_state
 
     @check_cache
