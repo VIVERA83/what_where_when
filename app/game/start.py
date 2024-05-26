@@ -1,5 +1,6 @@
 from . import BaseGameAccessor, check_cache
 from .dc import UserState, GameSettings
+from .model import User
 
 
 class StartPosition(BaseGameAccessor):
@@ -15,8 +16,12 @@ class StartPosition(BaseGameAccessor):
         2. Запоминаем позицию пользователя
         3. Направляем пользователю позицию в игре
         """
-        user = await self.db.get_user_by_id(tg_user_id) or await self.db.add_user(tg_user_id=tg_user_id)
+        user_raw = await self.db.get_user_by_id(tg_user_id) or await self.db.add_user(
+            tg_user_id=tg_user_id
+        )
+        user = User(**user_raw)
         user_state = UserState(
+            id=user.id.hex,
             tg_user_id=user.tg_user_id,
             position="start",
             settings=GameSettings(),

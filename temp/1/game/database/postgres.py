@@ -1,8 +1,7 @@
 import logging
 from dataclasses import dataclass
-from typing import Any, Dict, Literal, Tuple, TypeVar, Union
+from typing import Any, Dict, Literal, Optional, Tuple, Type, TypeVar, Union
 
-from core.settings import PostgresSettings
 from sqlalchemy import (
     DATETIME,
     TIMESTAMP,
@@ -10,7 +9,6 @@ from sqlalchemy import (
     MetaData,
     Result,
     Select,
-    select,
     TextClause,
     UpdateBase,
     ValuesBase,
@@ -19,12 +17,11 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import UUID, insert
 from sqlalchemy.dialects.postgresql.dml import Insert
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, create_async_engine
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-from sqlalchemy.orm.decl_api import (
-    DeclarativeAttributeIntercept,
-    MappedAsDataclass,
-)
+from sqlalchemy.orm.decl_api import DeclarativeAttributeIntercept, MappedAsDataclass
+
+from core.settings import PostgresSettings
 
 Query = Union[ValuesBase, Select, UpdateBase, Delete, Insert]
 Model = TypeVar("Model", bound=DeclarativeAttributeIntercept)
@@ -46,10 +43,9 @@ class Base(MappedAsDataclass, DeclarativeBase):
         quote_schema=True,
     )
     id: Mapped[UUID] = mapped_column(
-        UUID(as_uuid=False),
+        UUID(as_uuid=True),
         primary_key=True,
         server_default=text("gen_random_uuid()"),
-        unique=True,
     )
     created: Mapped[DATETIME] = mapped_column(
         TIMESTAMP,
@@ -99,7 +95,7 @@ class PostgresAccessor:
         """Closing the connection to the database."""
         if self._engine:
             await self._engine.dispose()
-        self.logger.info(f"{self.__class__.__name__} disconnected")
+        self.logger.info("Disconnected from Postgres")
 
     @property
     def session(self) -> AsyncSession:
@@ -150,32 +146,3 @@ class PostgresAccessor:
             result = [await session.execute(q) for q in query]
             await session.commit()
             return result
-
-    @staticmethod
-    def get_query_select_by_field(
-        model: Model, field_name: str, field_value: Any
-    ) -> Query:
-        """Get a query by field name.
-
-        Args:
-            model: Table model
-            field_name: Field names in the model
-            field_value: Field values in the model
-
-        Returns:
-            object: Query object
-        """
-        return select(model).where(
-            text(f"{model.__tablename__}.{field_name} = '{field_value}'")
-        )
-
-    @staticmethod
-    def get_query_from_text(smtp: str) -> TextClause:
-        """Get a query from text clause.
-
-        Args:
-            smtp: Text clause
-        Returns:
-            object: Query object
-        """
-        return text(smtp)

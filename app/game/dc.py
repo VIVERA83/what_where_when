@@ -1,6 +1,6 @@
 import json
 from dataclasses import dataclass, asdict
-from typing import Literal
+from typing import Literal, Optional
 
 GAME_STATUS = Literal["victory", "loss", "progress", "cancelled"]
 
@@ -21,9 +21,11 @@ class UserAnswer:
 
 @dataclass
 class UserState:
+    id: str
     tg_user_id: str
     position: str
     settings: "GameSettings"
+    current_question: Optional[str] = None
 
     def to_string(self):
         return json.dumps(asdict(self))
@@ -39,7 +41,7 @@ class GameSettings:
 
 
 @dataclass
-class Game:
+class GameSession:
     id: str
     users: set[str]
     timeout: int

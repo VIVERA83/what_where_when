@@ -10,7 +10,6 @@ class MainGameAccessor(
     MainMenuPosition,  # меню выбора режима игры, начать новую или присоединится
     QuestionsSettingPosition,  # выбрали начать новую, занимаемся настройкой кол-ва вопросов
     PlayersSettingPosition,  #
-    WaitPlayersPosition
-
+    WaitPlayersPosition,
 ):
     pass
