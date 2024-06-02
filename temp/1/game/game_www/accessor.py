@@ -22,7 +22,7 @@ class GameAccessor:
     async def create_game(self, users: set[str], timeout: int, questions_count: int):
         """Создаем игру."""
         await self.event_handler(event="create_game", timeout=timeout)
-        await self.db.create_game_session({})
+        await self.db._create_game_session({})
 
     async def start(self):
         queue = asyncio.Queue(1)

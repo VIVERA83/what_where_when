@@ -1,3 +1,4 @@
+import asyncio
 import json
 import logging
 import re
@@ -13,7 +14,7 @@ EVENT = Literal["text", "callback_data"]
 
 
 def check_cache(
-    func: Callable[["BaseGameAccessor", UserState, Any], Awaitable["UserState"]]
+        func: Callable[["BaseGameAccessor", UserState, Any], Awaitable["UserState"]]
 ):
     async def wrapper(self: "BaseGameAccessor", tg_user_id: str, *args, **kwargs):
         if user_state_raw := await self.cache.get(tg_user_id):
@@ -40,16 +41,17 @@ def check_cache(
 
 class BaseGameAccessor:
     def __init__(
-        self,
-        database: DataBaseManager,
-        cache: CacheAccessor,
-        rabbit: RabbitAccessor,
-        logger=logging.getLogger(__name__),
+            self,
+            database: DataBaseManager,
+            cache: CacheAccessor,
+            rabbit: RabbitAccessor,
+            logger=logging.getLogger(__name__),
     ):
         self.db = database
         self.cache = cache
         self.rabbit = rabbit
         self.logger = logger
+        self.tasks: dict[str, asyncio.Task] = {}
         self.__text_event_handlers: dict[
             str, Callable[["BaseGameAccessor", UserState, Any], Awaitable["UserState"]]
         ] = {}
@@ -63,7 +65,8 @@ class BaseGameAccessor:
         ] = {}
         self.init()
 
-    def init(self): ...
+    def init(self):
+        ...
 
     async def event_handler(self, event: EVENT, text_event: str, **kwargs) -> bytes:
         """Обработчик событий."""
@@ -78,7 +81,7 @@ class BaseGameAccessor:
         ValueError("Event must : 'text' or 'callback_data'")
 
     def get_text_event_handler(
-        self, text
+            self, text
     ) -> Callable[["BaseGameAccessor", UserState, Any], Awaitable["UserState"]]:
         if handler := self.__text_event_handlers.get(text):
             return handler
@@ -88,18 +91,26 @@ class BaseGameAccessor:
         self.logger.error(f"Callback data event handler not fount: {text}")
 
     def add_text_event_handler(
-        self,
-        handler: Callable[["BaseGameAccessor", UserState, Any], Awaitable["UserState"]],
-        text: Union[str, re.Pattern],
+            self,
+            handler: Callable[["BaseGameAccessor", UserState, Any], Awaitable["UserState"]],
+            text: Union[str, re.Pattern],
     ):
         self.__text_event_handlers[text] = handler
 
     def add_regex_text_event_handler(
-        self,
-        handler: Callable[["BaseGameAccessor", UserState, Any], Awaitable["UserState"]],
-        pattern: re.Pattern,
+            self,
+            handler: Callable[["BaseGameAccessor", UserState, Any], Awaitable["UserState"]],
+            pattern: re.Pattern,
     ):
         self.__commands_regex_handler[pattern] = handler
+
+    def add_task(self, task: asyncio.Task, user_id: str):
+        if not getattr(self, "tasks", None):
+            self.tasks = {}
+        self.tasks[user_id] = task
+        for key, t in self.tasks.items():
+            if t.done():
+                self.tasks.pop(key)
 
 
 def str_to_user_state(data: str) -> UserState:

@@ -6,22 +6,12 @@ from game.start_game import StartSingleGame
 
 
 class PlayersSettingPosition(BaseGameAccessor):
-    tasks: dict[str, asyncio.Task]
 
     @check_cache
     async def players_1(self, user_state: UserState, *_, **__) -> UserState:
         """Пользователь нажал кнопку "Игрок 1"."""
-        # создаём игру, и переходим в игру
         user_state.settings.quantity_players = 1
         user_state.position = "start_game"
-        self.add_task(
-            asyncio.create_task(
-                StartSingleGame(self.db, self.cache, self.rabbit, self.logger).run(
-                    user_state.tg_user_id, user_state.settings.quantity_questions
-                )
-            ),
-            user_state.tg_user_id,
-        )
         return user_state
 
     @check_cache
@@ -45,10 +35,16 @@ class PlayersSettingPosition(BaseGameAccessor):
         user_state.position = "wait_players"
         return user_state
 
-    def add_task(self, task: asyncio.Task, user_id: str):
-        if not getattr(self, "tasks", None):
-            self.tasks = {}
-        self.tasks[user_id] = task
-        for key, t in self.tasks.items():
-            if t.done():
-                self.tasks.pop(key)
+    @check_cache
+    async def start_game(self, user_state: UserState, *_, **__) -> UserState:
+        """Пользователь нажал кнопку "начать игру"."""
+        self.add_task(
+            asyncio.create_task(
+                StartSingleGame(self.db, self.cache, self.rabbit, self.logger).run(
+                    user_state.tg_user_id, user_state.settings.quantity_questions
+                )
+            ),
+            user_state.tg_user_id,
+        )
+        user_state.position = "single_game"
+        return user_state
