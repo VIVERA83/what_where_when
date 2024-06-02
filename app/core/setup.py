@@ -43,7 +43,7 @@ async def run_app():
     rabbit = RabbitAccessor(logger=logger)
     db = DataBaseManager(logger=logger)
     cache = CacheAccessor(logger=logger)
-    game = MainGameAccessor(db, cache, rabbit,logger=logger)
+    game = MainGameAccessor(db, cache, rabbit, logger=logger)
     try:
         await asyncio.gather(rabbit.connect(), cache.connect())
         await rabbit.consume(callback(rabbit)(game.event_handler), name="game")

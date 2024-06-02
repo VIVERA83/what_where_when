@@ -43,7 +43,7 @@ class BaseGameAccessor:
         self,
         database: DataBaseManager,
         cache: CacheAccessor,
-        rabbit:  RabbitAccessor,
+        rabbit: RabbitAccessor,
         logger=logging.getLogger(__name__),
     ):
         self.db = database

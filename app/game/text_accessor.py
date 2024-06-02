@@ -21,7 +21,7 @@ class TextAccessor(BaseGameAccessor):
         )
 
     async def handler_text_single_game_state(
-            self, user_state: UserState, text: str, *_, **__
+        self, user_state: UserState, text: str, *_, **__
     ) -> UserState:
         """Обработка ответа полученного из позиции игрока в одиночной игре.
 

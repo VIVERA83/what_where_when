@@ -40,6 +40,7 @@ class UserState:
     def to_dict(self):
         return asdict(self)
 
+
 @dataclass
 class GameSettings:
     quantity_players: int = 1
