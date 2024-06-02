@@ -9,6 +9,7 @@ from store.game.models import (
     GameStatusEnum,
     QuestionModel,
     question_game_session_association,
+    UserAnswerModel,
 )
 
 from icecream import ic
@@ -31,33 +32,35 @@ class DataBaseManager(PostgresAccessor):
         self.logger.debug(f"add {UserModel.__name__} : {tg_user_id}")
         return (await self.query_execute(query)).mappings().first()
 
-    async def create_game_session(
-        self, users_ids: list[str], questions_ids: list[str]
-    ) -> Optional[dict]:
-        query_session = self.get_query_from_text(
+    async def create_game_session(self) -> Optional[dict]:
+        query = self.get_query_from_text(
             f"""
             insert into game.game_sessions (game_status, timeout) 
             values ('{GameStatusEnum.progress.value}', 60) 
-            returning id;
+            returning *;
         """
         )
-        game_session_id, *_ = (await self.query_execute(query_session)).first()
-        for user_id in users_ids:
-            query = self.get_query_insert(
-                model=user_game_session_association,
-                user_id=user_id,
-                game_session_id=game_session_id,
-            )
-            await self.query_execute(query)
-        for question_id in questions_ids:
-            query = self.get_query_insert(
-                model=question_game_session_association,
-                question_id=question_id,
-                game_session_id=game_session_id,
-            )
-            await self.query_execute(query)
+        return (await self.query_execute(query)).mappings().first()
 
-        return await self.get_game_session_by_id(game_session_id)
+    async def add_user_to_game_session(
+        self, game_session_id: str, user_id: str
+    ) -> Optional[dict]:
+        query = self.get_query_insert(
+            model=user_game_session_association,
+            user_id=user_id,
+            game_session_id=game_session_id,
+        ).returning("*")
+        return (await self.query_execute(query)).mappings().first()
+
+    async def add_question_to_game_session(
+        self, game_session_id: str, question_id: str
+    ) -> Optional[dict]:
+        query = self.get_query_insert(
+            model=question_game_session_association,
+            question_id=question_id,
+            game_session_id=game_session_id,
+        ).returning("*")
+        return (await self.query_execute(query)).mappings().first()
 
     async def get_user_by_id(self, tg_user_id: str) -> dict:
         query = self.get_query_from_text(
@@ -82,16 +85,28 @@ class DataBaseManager(PostgresAccessor):
         )
         return (await self.query_execute(query)).scalar()
 
-    async def get_users_ids_by_tg_user_ids(self, tg_user_ids: list[str]) -> list[UUID]:
+    async def get_user_id_by_tg_user_id(self, tg_user_id: str) -> UUID:
         query = self.get_query_from_text(
             f"""
                 select id  
                 from game.users u
-                where u.tg_user_id in ({"".join(f"'{tg_user_id}'" for tg_user_id in tg_user_ids)})
+                where u.tg_user_id = '{tg_user_id}'
                 ;
             """
         )
-        return (await self.query_execute(query)).scalars().all()  # type: ignore
+        return (await self.query_execute(query)).scalar()
+
+    async def get_number_questions_in_game_session(self, game_session_id: str) -> int:
+        query = self.get_query_from_text(
+            f"""
+                select count(1) from game.questions q 
+                join game.question_game_session_association qgsa on qgsa.question_id  = q.id 
+                join game.game_sessions gs  on gs.id = qgsa.game_session_id 
+                where gs.id ='{game_session_id}'
+                ;
+            """
+        )
+        return (await self.query_execute(query)).scalars().first()
 
     async def get_game_session_by_id(self, game_session_id: str) -> Optional[dict]:
         query = self.get_query_from_text(
@@ -120,12 +135,51 @@ class DataBaseManager(PostgresAccessor):
         )
         return (await self.query_execute(query)).scalar()
 
-    async def get_random_questions(self, count: int) -> Optional[dict]:
+    async def get_random_question(self) -> Optional[dict]:
         query = self.get_query_from_text(
             f"""
                 select * from game.questions
                 order by random()
-                limit {count}
+                limit 1
             """
         )
-        return (await self.query_execute(query)).mappings().all()
+        return (await self.query_execute(query)).mappings().first()
+
+    async def get_question_by_title(self, title: str) -> Optional[dict]:
+        query = self.get_query_from_text(
+            f"""
+                select * from game.questions
+                where question = '{title}'
+            """
+        )
+        return (await self.query_execute(query)).mappings().first()
+
+    async def get_question_by_id(self, question_id: str) -> Optional[dict]:
+        query = self.get_query_from_text(
+            f"""
+                select * from game.questions
+                where id = '{question_id}'
+            """
+        )
+        return (await self.query_execute(query)).mappings().first()
+
+    async def add_answer(
+        self, user_id: str, game_session_id: str, question_id: str, answer: str
+    ) -> Optional[dict]:
+        query = self.get_query_from_text(
+            f"""
+                insert into game.user_answers (is_correct, answer, game_session, question_id, user_id) 
+                values (
+                    (select 
+                        case when lower(q.answer) = lower('{answer}')
+                            then true 
+                            else false  
+                        end as is_correct 
+                    from game.questions q  
+                    where q.id  = '{question_id}'
+                    ), lower('{answer}'), '{game_session_id}', '{question_id}','{user_id}'
+                )
+                returning *
+            """
+        )
+        return (await self.query_execute(query)).mappings().first()

@@ -17,7 +17,7 @@ class StartPosition(BaseGameAccessor):
         2. Запоминаем позицию пользователя
         3. Направляем пользователю позицию в игре
         """
-        self.logger.info(f"start: {user_state.tg_user_id}")
+        user_state.position = "start"
         return user_state
 
     @check_cache

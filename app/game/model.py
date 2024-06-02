@@ -48,3 +48,19 @@ class Question(BaseModel):
             if not all(v[0].values()):
                 return None
         return v
+
+
+class UserAnswer(BaseModel):
+    id: Optional[UUID]
+    is_correct: Optional[bool]
+    answer: Optional[str]
+    game_session: Optional[UUID] = None
+    question_id: Optional[UUID] = None
+    user_id: Optional[UUID] = None
+
+    @field_validator("game_session", mode="before")
+    def str_to_date(cls, v: Optional[dict]) -> Optional[dict]:
+        if isinstance(v, dict):
+            if not all(v.values()):
+                return None
+        return v

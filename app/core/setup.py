@@ -3,6 +3,7 @@ import json
 from typing import Any, Awaitable, Callable
 
 from aio_pika.abc import AbstractIncomingMessage
+from icecream import ic
 
 from core.logger import setup_logging
 
@@ -16,6 +17,7 @@ def callback(rabbit: RabbitAccessor) -> Callable:
     def decorator(func: Callable[[Any], Awaitable[Any]]):
         async def wrapper(message: AbstractIncomingMessage):
             try:
+                print(message.reply_to)
                 result = (
                     await func(**json.loads(message.body))
                     or b'{"status": "Empty response"}'
@@ -25,6 +27,7 @@ def callback(rabbit: RabbitAccessor) -> Callable:
                     "utf-8"
                 )
                 rabbit.logger.error(ex)
+            ic(result)
             await rabbit.reply_to(message, result)
             await message.ack(True)
             rabbit.logger.debug(f"Got response: {result}")
@@ -40,7 +43,7 @@ async def run_app():
     rabbit = RabbitAccessor(logger=logger)
     db = DataBaseManager(logger=logger)
     cache = CacheAccessor(logger=logger)
-    game = MainGameAccessor(db, cache, logger=logger)
+    game = MainGameAccessor(db, cache, rabbit,logger=logger)
     try:
         await asyncio.gather(rabbit.connect(), cache.connect())
         await rabbit.consume(callback(rabbit)(game.event_handler), name="game")

@@ -82,7 +82,7 @@ class GameSessionModel(Base):
 class QuestionModel(Base):
     __tablename__ = "questions"
 
-    question: Mapped[str] = mapped_column(init=False)
+    question: Mapped[str] = mapped_column(init=False, unique=True)
     answer: Mapped[str] = mapped_column(init=False)
 
     game_sessions: Mapped[List["GameSessionModel"]] = relationship(

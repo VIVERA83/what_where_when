@@ -26,6 +26,10 @@ class UserState:
     position: str
     settings: "GameSettings"
     current_question: Optional[str] = None
+    game_session_id: Optional[str] = None
+    correct_answer: str = None
+    user_answer: str = None
+    score: int = 0
 
     def to_string(self):
         return json.dumps(asdict(self))
@@ -33,6 +37,8 @@ class UserState:
     def to_bytes(self):
         return bytes(self.to_string(), "utf-8")
 
+    def to_dict(self):
+        return asdict(self)
 
 @dataclass
 class GameSettings:
